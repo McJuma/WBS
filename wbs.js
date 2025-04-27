@@ -46,9 +46,10 @@ loginForm.addEventListener("submit", function (event) {
     })
     .then(response => response.text()) // expecting plain text from PHP
     .then(data => {
+        hideLoader();
         alert(data); // Show the server's message
         console.log(data);
-        hideLoader();
+        
     })
     .catch(error => {
         // Hide loading indicator

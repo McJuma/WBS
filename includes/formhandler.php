@@ -35,7 +35,7 @@ if (isset($_POST['phone']) && isset($_POST['amount'])) {
     curl_close($curl);
 
     if ($status != 200) {
-        echo "<div class='alert alert-danger'>Failed to get access token. Status code: $status</div>";
+        echo "Failed to get access token. Status code: $status";
         exit;
     }
    

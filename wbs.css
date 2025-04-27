@@ -1,7 +1,7 @@
 * {
   box-sizing: boreder-box;
 }
-form {
+#login-form {
   display: flex;
   flex-direction: column;
   width: 50%;
@@ -11,7 +11,10 @@ form {
   border-radius: 0 8px;
   padding: 1rem;
 }
+html,
 body {
+  max-width: 100%;
+  height: auto;
   padding: 1rem;
 }
 .loader-wrapper {
@@ -30,7 +33,6 @@ body {
   display: none;
 }
 .loader {
-  /* display: none; */
   border: 5px solid #f3f3f3; /* Light grey */
   border-top: 5px solid #3498db; /* Blue */
   border-radius: 50%;
