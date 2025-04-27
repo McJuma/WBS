@@ -1,18 +1,21 @@
 <?php
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+// Check if phone and amount are set
+if (isset($_POST['phone']) && isset($_POST['amount'])) {
     $phone = $_POST['phone'];
+    $amount = $_POST['amount'];
 
-    if (empty($phone)) {
-        echo "<div class='alert alert-danger'>Please enter a phone number.</div>";
-        header('Location: /WBS/wbs.html');
-        exit;
+    // Validate the data server-side as well (important!)
+    if (!preg_match('/^(2547|2541)\d{8}$/', $phone)) {
+        echo "Invalid phone number format.";
+        exit();
     }
 
-    // Convert to M-Pesa format
-    $phone = '254' . substr($phone, 1);
-    $formatted_phone = (string)$phone;
-
-    // echo "<div class='alert alert-success'>Phone number converted to M-Pesa format: $formatted_phone</div>";
+    if (!is_numeric($amount) || $amount <= 0) {
+        echo "Invalid amount.";
+        exit();
+    }
+    $str_amount = strval($amount);
+    $str_phone = strval($phone);
 
     date_default_timezone_set('Africa/Nairobi');
 
@@ -35,6 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         echo "<div class='alert alert-danger'>Failed to get access token. Status code: $status</div>";
         exit;
     }
+   
 
     $result = json_decode($result);
     $access_token = $result->access_token;
@@ -46,8 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $buz_shortcode = '174379';
     $time_stamp = date('YmdHis');
     $password = base64_encode($buz_shortcode . $passkey . $time_stamp);
-    $amount = '1';
-    $partyA = $formatted_phone;
+    $amount = $str_amount;
+    $partyA = $str_phone;
     $partyB = $buz_shortcode;
     $account_ref = 'TSF';
     $transaction_desc = 'Donation';
@@ -77,9 +81,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
 
-    if ($status == 200) {
-        echo "<div class='alert alert-success'>STK Push initiated successfully. Response: $curl_response</div>";
-    } else {
-        echo "<div class='alert alert-danger'>Failed to initiate STK Push. Status code: $status. Response: $curl_response</div>";
-    }
+    echo "STK Push initiated successfully! Check your phone for the payment request.";
+}
+else {
+    header("Location: http://localhost:8080/WBS/wbs.html");
+    exit();
 }

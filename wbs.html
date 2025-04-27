@@ -16,6 +16,7 @@
             integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
             crossorigin="anonymous"
         />
+        <link rel="stylesheet" href="wbs.css">
     </head>
 
     <body>
@@ -23,10 +24,21 @@
             <!-- place navbar here -->
         </header>
         <main>
-            <form action="includes/formhandler.php" method="post">
-                <label for="phone">Phone: </label><input type="tel" name="phone" id="phone" placeholder="Phone"><br>
+            <form id="login-form" name="login-form" action="#" method="POST">
+                <label for="phone">Phone: </label>
+                <input type="tel" name="phone" id="phone" placeholder="e.g., 07XXXXXXXX/2547XXXXXXXXX"><br>
+            
+                <label for="amount">Amount: </label>
+                <input type="text" name="amount" id="amount" placeholder="Amount in KES"><br>
+            
                 <input type="submit">
+            
+                <div class="loader-wrapper-hidden" id="loader">
+                    <div class="loader"></div>&nbsp;<div>Processing</div>
+                </div>
             </form>
+
+            
         </main>
         <footer>
             <!-- place footer here -->
@@ -43,5 +55,6 @@
             integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
             crossorigin="anonymous"
         ></script>
+        <script src="wbs.js"></script>
     </body>
 </html>

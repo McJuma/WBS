@@ -1,0 +1,50 @@
+* {
+  box-sizing: boreder-box;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  height: auto;
+  margin: 0 auto;
+  border: 1px solid #ccc;
+  border-radius: 0 8px;
+  padding: 1rem;
+}
+body {
+  padding: 1rem;
+}
+.loader-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 9999;
+}
+.loader-wrapper-hidden {
+  display: none;
+}
+.loader {
+  /* display: none; */
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid #3498db; /* Blue */
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  position: relative;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}

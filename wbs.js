@@ -1,0 +1,62 @@
+const loginForm = document.getElementById("login-form");
+const loadingIndicator = document.getElementById("loader");
+
+function showLoader() {
+    loadingIndicator.classList.remove("loader-wrapper-hidden");
+    loadingIndicator.classList.add("loader-wrapper");
+}
+
+function hideLoader() {
+    loadingIndicator.classList.remove("loader-wrapper");
+    loadingIndicator.classList.add("loader-wrapper-hidden");
+}
+
+loginForm.addEventListener("submit", function (event) {
+    event.preventDefault(); // Prevent the default form submission behavior
+
+    let phoneNumber = document.getElementById('phone').value.trim();
+    const amount = document.getElementById('amount').value.trim();
+
+    if (phoneNumber === "" || amount === "") {
+        alert("Please fill in all fields.");
+        return;
+    } 
+    else if (isNaN(amount) || amount <= 0) {
+        alert("Amount must be a positive integer.");
+        return;
+    } 
+    else if (!/^(07|2547|01)\d{8}$/.test(phoneNumber)) {
+        alert("Enter a valid phone number format.");
+        return;
+    } 
+    else if (/^0\d{9}$/.test(phoneNumber)) {
+        phoneNumber = phoneNumber.replace(/^0/, '254');
+    }
+
+    const formData = new FormData();
+    formData.append('phone', phoneNumber);
+    formData.append('amount', amount);
+
+    // Show loading indicator
+    showLoader();
+
+    fetch('http://localhost:8080/WBS/includes/formhandler.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.text()) // expecting plain text from PHP
+    .then(data => {
+        alert(data); // Show the server's message
+        console.log(data);
+        hideLoader();
+    })
+    .catch(error => {
+        // Hide loading indicator
+        hideLoader();
+        alert("Error submitting the form: " + error.message);
+        console.error(error);
+    });
+    // Reset the form after submission
+    loginForm.reset();
+    
+});
