@@ -1,5 +1,15 @@
-const loginForm = document.getElementById("login-form");
+const payForm = document.getElementById("pay-form");
 const loadingIndicator = document.getElementById("loader");
+
+function displayForm(){
+    payForm.classList.remove("hidden");
+    payForm.classList.add("shown")
+
+}
+function hideForm(){
+    payForm.classList.remove("shown");
+    payForm.classList.add("hidden")
+}
 
 function showLoader() {
     loadingIndicator.classList.remove("loader-wrapper-hidden");
@@ -11,7 +21,7 @@ function hideLoader() {
     loadingIndicator.classList.add("loader-wrapper-hidden");
 }
 
-loginForm.addEventListener("submit", function (event) {
+payForm.addEventListener("submit", function (event) {
     event.preventDefault(); // Prevent the default form submission behavior
 
     let phoneNumber = document.getElementById('phone').value.trim();
@@ -40,7 +50,7 @@ loginForm.addEventListener("submit", function (event) {
     // Show loading indicator
     showLoader();
 
-    fetch('http://localhost:8080/WBS/includes/formhandler.php', {
+    fetch('http://localhost:8080/WBS/formhandler.php', {
         method: 'POST',
         body: formData
     })
@@ -58,6 +68,11 @@ loginForm.addEventListener("submit", function (event) {
         console.error(error);
     });
     // Reset the form after submission
-    loginForm.reset();
+    payForm.reset();
     
 });
+let loginForm = document.getElementById('login-form');
+function showLoginForm() {
+    loginForm.classList.remove('hidden');
+    loginForm.classList.add('shown');
+}
