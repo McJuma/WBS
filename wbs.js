@@ -3,7 +3,7 @@ const loadingIndicator = document.getElementById("loader");
 
 function displayForm(){
     payForm.classList.remove("hidden");
-    payForm.classList.add("shown")
+    payForm.classList.add("shown");
 
 }
 function hideForm(){

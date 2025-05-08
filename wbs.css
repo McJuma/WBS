@@ -1,16 +1,6 @@
 * {
   box-sizing: border-box;
 }
-/* #login-form { */
-/* display: flex;
-  flex-direction: column; */
-/* width: 50%;
-  height: auto;
-  margin: 0 auto;
-  border: 1px solid #ccc;
-  border-radius: 0 8px;
-  padding: 1rem; */
-/* } */
 html,
 body {
   max-width: 100%;
