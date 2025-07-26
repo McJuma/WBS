@@ -9,8 +9,10 @@ fields from callback
 6. $MpesaReceiptNumber
 7. $Amount
 8. $PhoneNumber
-9. TransactionDate
+9. $TransactionDate
 */
+// 6, 7, 8 and 9 will not be included in callBack data if transaction fails or transaction is cancelled
+
 $callbackData = file_get_contents('php://input');
 // log callback data to a file
 file_put_contents('logs/callback_raw.log', $callbackData . PHP_EOL, FILE_APPEND);
@@ -60,7 +62,7 @@ foreach($CallbackMetadata as $Item) {
 $status = ($ResultCode == 0) ? 'Success' : 'Failed';
 
 // connect to database
-$conn = mysqli_connect('localhost', 'root', 'admin', 'mpesa_transactions');
+$conn = mysqli_connect('db_name', 'db_username', 'db_password', 'db_name');
 if ($conn->connect_error) {
     file_put_contents('logs/db_connect_error.log', 'Failed to connect to database: ' . $conn->connect_error . PHP_EOL, FILE_APPEND);
     exit;
@@ -70,19 +72,21 @@ $stmt = $conn->prepare("UPDATE stk_transactions SET
     result_code = ?,
     result_desc = ?,
     mpesa_receipt_number = ?,
-    transaction_date = ?,
+    /*
     phone_number = ?,
     amount = ?,
+    */
+    transaction_date = ?,
     status = ?
     WHERE checkout_request_id = ?");
 // ssssssss
-$stmt->bind_param("isssssss",
+$stmt->bind_param("isssss",
     $ResultCode,
     $ResultDesc,
     $MpesaReceiptNumber,
+    // $PhoneNumber,
+    // $Amount,
     $TransactionDate,
-    $PhoneNumber,
-    $Amount,
     $status,
     $CheckoutRequestId);
 
