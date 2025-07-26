@@ -1,152 +1,127 @@
 <?php
-// Configuration
-define('CONSUMER_KEY', 'G8TAWATIG5154hOQhNigPbwiUMeGahpWzfFW0auOh4e0krUM');
-define('CONSUMER_SECRET', '98HUqbQlEoYffmKPNJn2T3nNDbJco1ASgWGXbq98VfNYKYqV9eZeWMiA7Y162sqC');
-define('PASSKEY', 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919');
-define('BUSINESS_SHORTCODE', '174379');
-define('CALLBACK_URL', 'https://bf525480c0ed.ngrok-free.app/WBS/mpesa-callback.php');
-define('ACCOUNT_REF', 'TSF');
-define('TRANSACTION_DESC', 'Donation');
+header('Content-Type: application/json'); // Let the client know we're returning JSON
 
-date_default_timezone_set('Africa/Nairobi');
+// === 1. Get Phone Number and Amount from JavaScript POST ===
+$phone = $_POST['phone'] ?? '';
+$amount = $_POST['amount'] ?? '';
 
-// Helper functions
-function validate_phone($phone) {
-    return preg_match('/^(2547|2541)\d{8}$/', $phone);
+// If missing, return error
+if (!$phone || !$amount) {
+    echo json_encode(['status' => 'error', 'message' => 'Phone number and amount required.']);
+    exit;
 }
 
-function validate_amount($amount) {
-    return is_numeric($amount) && $amount > 0;
+// === 2. Set Sandbox Credentials (Get these from your Daraja test app) ===
+$shortCode = '174379'; // Safaricom test paybill number
+$passkey = 'YOUR_SANDBOX_PASSKEY';
+$consumerKey = 'YOUR_SANDBOX_CONSUMER_KEY';
+$consumerSecret = 'YOUR_SANDBOX_CONSUMER_SECRET';
+$callbackUrl = 'https://yourdomain.com/callback.php'; // Must be HTTPS
+
+// === 3. Get OAuth Access Token ===
+$credentials = base64_encode("$consumerKey:$consumerSecret");
+$tokenUrl = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
+
+// cURL handle: $ch means "cURL handle" — the connection/session
+$ch = curl_init($tokenUrl);
+curl_setopt($ch, CURLOPT_HTTPHEADER, ["Authorization: Basic $credentials"]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+$tokenResponse = curl_exec($ch); // Make the request to get token
+$access_token = json_decode($tokenResponse)->access_token ?? null;
+curl_close($ch); // Always close the handle after use
+
+// If token failed, stop
+if (!$access_token) {
+    echo json_encode(['status' => 'error', 'message' => 'Failed to get access token.']);
+    exit;
 }
 
-function get_access_token() {
-    $url = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials';
-    $credentials = base64_encode(CONSUMER_KEY . ':' . CONSUMER_SECRET);
+// === 4. Prepare STK Push Payload ===
+$timestamp = date('YmdHis'); // Format: YYYYMMDDHHMMSS
+$password = base64_encode($shortCode . $passkey . $timestamp); // Daraja requirement
+$accountReference = 'TEST_' . time(); // Optional label for this transaction
+$transactionDesc = 'Testing STK Push'; // Description to show to user
 
-    $curl = curl_init($url);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, ['Authorization: Basic ' . $credentials]);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    $response = curl_exec($curl);
-    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
+// Data to send to Safaricom STK API
+$stkPayload = [
+    'BusinessShortCode' => $shortCode,
+    'Password' => $password,
+    'Timestamp' => $timestamp,
+    'TransactionType' => 'CustomerPayBillOnline',
+    'Amount' => $amount,
+    'PartyA' => $phone,
+    'PartyB' => $shortCode, // Where money is going (your paybill/till)
+    'PhoneNumber' => $phone,
+    'CallBackURL' => $callbackUrl,
+    'AccountReference' => $accountReference,
+    'TransactionDesc' => $transactionDesc
+];
 
-    if ($status != 200) {
-        return false;
+// === 5. Send STK Push Request ===
+$stkUrl = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
+$ch = curl_init($stkUrl); // Create new cURL handle for STK Push request
+curl_setopt($ch, CURLOPT_HTTPHEADER, [
+    'Content-Type: application/json',
+    "Authorization: Bearer $access_token"
+]);
+curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+curl_setopt($ch, CURLOPT_POST, true);
+curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($stkPayload)); // Convert payload to JSON
+
+$stkPushResponse = curl_exec($ch); // Perform the API request
+curl_close($ch); // Close the connection
+
+// === 6. Decode the Response ===
+$response = json_decode($stkPushResponse, true);
+
+// === 7. Store Transaction in DB if Successful ===
+if (isset($response['ResponseCode']) && $response['ResponseCode'] === '0') {
+    $merchantRequestID = $response['MerchantRequestID'];
+    $checkoutRequestID = $response['CheckoutRequestID'];
+
+    // Connect to MySQL database
+    $conn = new mysqli("localhost", "root", "admin", "mpesa_transactions");
+    if ($conn->connect_error) {
+        file_put_contents("logs/db_error.log", $conn->connect_error . PHP_EOL, FILE_APPEND);
+        echo json_encode(['status' => 'error', 'message' => 'DB connection failed']);
+        exit;
     }
 
-    $result = json_decode($response);
-    return $result->access_token ?? false;
-}
-
-function initiate_stk_push($access_token, $phone, $amount) {
-    $url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
-    $timestamp = date('YmdHis');
-    $password = base64_encode(BUSINESS_SHORTCODE . PASSKEY . $timestamp);
-
-    $payload = [
-        'BusinessShortCode' => BUSINESS_SHORTCODE,
-        'Password' => $password,
-        'Timestamp' => $timestamp,
-        'TransactionType' => 'CustomerPayBillOnline',
-        'Amount' => strval($amount),
-        'PartyA' => strval($phone),
-        'PartyB' => BUSINESS_SHORTCODE,
-        'PhoneNumber' => strval($phone),
-        'CallBackURL' => CALLBACK_URL,
-        'AccountReference' => ACCOUNT_REF,
-        'TransactionDesc' => TRANSACTION_DESC
-    ];
-
-    $headers = [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $access_token
-    ];
-
-    $curl = curl_init($url);
-    curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_POST, true);
-    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($payload));
-    $response = curl_exec($curl);
-    $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
-    curl_close($curl);
-
-    return $status == 200 ? json_decode($response, true) : false;
-}
-
-// Main logic
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['phone'], $_POST['amount'])) {
-    $phone = $_POST['phone'];
-    $amount = $_POST['amount'];
-
-    if (!validate_phone($phone)) {
-        echo "Invalid phone number format.";
-        exit();
-    }
-
-    if (!validate_amount($amount)) {
-        echo "Invalid amount.";
-        exit();
-    }
-
-    $access_token = get_access_token();
-    if (!$access_token) {
-        echo "Failed to get access token.";
-        exit();
-    }
-
-    $response = initiate_stk_push($access_token, $phone, $amount);
-    if ($response && isset($response['ResponseCode']) && $response['ResponseCode'] === '0') {
-        $merchantRequestID = $response['MerchantRequestID'];
-        $checkoutRequestID = $response['CheckoutRequestID'];
-
-        // connect to the database
-        $db_conn = mysqli_connect("localhost", "root", "admin", "mpesa_transactions");
-        if ($db_conn->connect_error) {
-            file_put_contents("logs/db_error.log", $db_conn->connect_error . PHP_EOL, FILE_APPEND);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Failed to connect to the database'
-            ]);
-            exit();
-        }
-
-        // Prepare the SQL query
-        $sql = $db_conn->prepare("INSERT INTO stk_transactions
-        (merchant_request_id, checkout_request_id, phone_number, amount, account_ref, status)
+    // Prepare to insert STK push data into stk_transactions
+    $stmt = $conn->prepare("INSERT INTO stk_transactions 
+        (merchant_request_id, checkout_request_id, phone_number, amount, account_ref, status) 
         VALUES (?, ?, ?, ?, ?, ?)");
-        $status = 'Pending'; // will be updated later by callback
 
-        $sql->bind_param("ssssss",
-            $merchantRequestID,
-            $checkoutRequestID,
-            strval($phone),
-            strval($amount),
-            ACCOUNT_REF,
-            $status
-        );
+    $status = 'Pending'; // Default status until callback updates it
+    $stmt->bind_param("ssssss", 
+        $merchantRequestID, 
+        $checkoutRequestID, 
+        $phone, 
+        $amount, 
+        $accountReference, 
+        $status
+    );
 
-        if (!$sql->execute()) {
-            file_put_contents("logs/db_insert_error.log", $sql->error . PHP_EOL, FILE_APPEND);
-            echo json_encode([
-                'status' => 'error',
-                'message' => 'Failed to insert transaction details into the database'
-            ]);
-        } else {
-            echo json_encode([
-                'status' => 'Pending',
-                'message' => 'STK Push initiated successfully! Check your phone for the payment request.',
-                'checkout_request_id' => $checkoutRequestID
-            ]);
-            exit();
-        }
-        // close connection
-        $sql->close();
-        $db_conn->close();
+    // Execute insert and send response
+    if (!$stmt->execute()) {
+        file_put_contents("logs/db_insert_error.log", $stmt->error . PHP_EOL, FILE_APPEND);
+        echo json_encode(['status' => 'error', 'message' => 'DB insert failed']);
     } else {
-        echo "Failed to initiate STK Push.";
+        echo json_encode([
+            'status' => 'pending',
+            'message' => 'STK Push sent successfully.',
+            'checkoutRequestID' => $checkoutRequestID
+        ]);
     }
+
+    $stmt->close();
+    $conn->close();
 } else {
-    header("Location: http://localhost:8080/WBS/wbs.html");
-    exit();
+    // STK Push failed (e.g., invalid phone)
+    file_put_contents("logs/stkpush_errors.log", $stkPushResponse . PHP_EOL, FILE_APPEND);
+    echo json_encode([
+        'status' => 'error',
+        'message' => 'STK Push request failed',
+        'response' => $response
+    ]);
 }

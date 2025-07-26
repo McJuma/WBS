@@ -1,76 +1,49 @@
-const payForm = document.getElementById("pay-form");
-const loadingIndicator = document.getElementById("loader");
+const stkForm = document.querySelector('.stk-form');
 
-function displayForm() {
-    payForm.classList.remove("hidden");
-    payForm.classList.add("shown");
+stkForm.addEventListener('submit', (e) => {
+    e.preventDefault();
 
-}
-function hideForm() {
-    payForm.classList.remove("shown");
-    payForm.classList.add("hidden")
-}
+    let phone = document.querySelector('#phone').value.trim();
+    let amount = document.querySelector('#amount').value.trim();
 
-function showLoader() {
-    loadingIndicator.classList.remove("loader-wrapper-hidden");
-    loadingIndicator.classList.add("loader-wrapper");
-}
-
-function hideLoader() {
-    loadingIndicator.classList.remove("loader-wrapper");
-    loadingIndicator.classList.add("loader-wrapper-hidden");
-}
-
-payForm.addEventListener("submit", function (event) {
-    event.preventDefault(); // Prevent the default form submission behavior
-
-    let phoneNumber = document.getElementById('phone').value.trim();
-    const amount = document.getElementById('amount').value.trim();
-
-    if (phoneNumber === "" || amount === "") {
-        alert("Please fill in all fields.");
+    if (!phone || !amount) {
+        alert('Please fill in all fields');
         return;
     }
-    else if (isNaN(amount) || amount <= 0) {
-        alert("Amount must be a positive integer.");
+
+    if (phone.length !== 10 && phone.length !== 12 && phone.length !== 13) {
+        alert('Invalid phone number!');
         return;
     }
-    else if (!/^(07|2547|01)\d{8}$/.test(phoneNumber)) {
-        alert("Enter a valid phone number format.");
+
+    if (!phone.startsWith('+254') && !phone.startsWith('0') && !phone.startsWith('254')) {
+        alert('Invalid phone number!');
         return;
     }
-    else if (/^0\d{9}$/.test(phoneNumber)) {
-        phoneNumber = phoneNumber.replace(/^0/, '254');
+
+    if (phone.startsWith('+254')) {
+        phone = phone.replace('+254', '254');
+    } else if (phone.startsWith('0')) {
+        phone = phone.replace('0', '254');
     }
 
-    const formData = new FormData(payForm);
+    // Convert amount and phone to strings
+    amount = amount.toString();
+    phone = phone.toString();
 
-    // Show loading indicator
-    showLoader();
+    // submit the form with the phone and amount values
+    const formData = new FormData();
+    formData.append('phone', phone);
+    formData.append('amount', amount);
 
-    fetch('https://bf525480c0ed.ngrok-free.app/WBS/formhandler.php', {
+    fetch('formhandler.php', {
         method: 'POST',
         body: formData
-    })
-        .then(response => response.text()) // expecting plain text from PHP
+    }).then(response => response.json())
         .then(data => {
-            hideLoader();
-            alert(data); // Show the server's message
-            console.log(data);
-
+            alert(data); // Show server response
         })
         .catch(error => {
-            // Hide loading indicator
-            hideLoader();
-            alert("Error submitting the form: " + error.message);
-            console.error(error);
+            alert('Error: ' + error);
         });
-    // Reset the form after submission
-    payForm.reset();
-
 });
-let loginForm = document.getElementById('login-form');
-function showLoginForm() {
-    loginForm.classList.remove('hidden');
-    loginForm.classList.add('shown');
-}

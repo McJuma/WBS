@@ -1,98 +1,22 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-    <head>
-        <title>Title</title>
-        <!-- Required meta tags -->
-        <meta charset="utf-8" />
-        <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, shrink-to-fit=no"
-        />
 
-        <!-- Bootstrap CSS v5.2.1 -->
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-            rel="stylesheet"
-            integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-            crossorigin="anonymous"
-        />
-        <link rel="stylesheet" href="wbs.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WBS</title>
+    <link rel="stylesheet" href="wbs.css">
+</head>
 
-    <body>
-        <header>
-            
-        </header>
-        <main>
-            <!-- Packages Section-->
-             <div class="container">
-                <div class="row">
-                    <div class="col-12">
-                        <h1>Bingwa Networks</h1>
-                        <p>Select a package to continue</p>
-                        <form action="#" method="post" onsubmit="continueAction()">
-                            <div class="card text-start">
-                                <img class="card-img-top" src="holder.js/100px180/" alt="Title" />
-                                <div class="card-body">
-                                    <h4 class="card-title">1 hr - Unlimited</h4>
-                                    <p class="card-text">Ksh. 10.00 - 2mbps max</p>
-                                    <p class="card-text"><button type="button" onclick="displayForm()" class="btn">Continue</button></p>
-                                </div>
-                            </div>
-                            <div class="card text-start">
-                                <img class="card-img-top" src="holder.js/100px180/" alt="Title" />
-                                <div class="card-body">
-                                    <h4 class="card-title">3 hrs - Unlimited</h4>
-                                    <p class="card-text">Ksh. 20.00 - 2mbps max</p>
-                                    <p class="card-text"><button type="button" onclick="displayForm()" class="btn">Continue</button></p>
-                                </div>
-                            </div>
-                        </form><BR></BR>
-                        <p>Already Purchased? <button style="border: 1px solid blue; border-radius: 8px; background: black; color: white" onclick="showLoginForm()">Login</button></p>
-                        
-                    </div>
-                </div>
-             </div>
-            <form id="pay-form" name="pay-form" action="#" method="POST" class="hidden">
-                <label for="phone">Phone: </label>
-                <input type="tel" name="phone" id="phone" placeholder="e.g., 07XXXXXXXX/2547XXXXXXXXX"><br>
-            
-                <label for="amount">Amount: </label>
-                <input type="text" name="amount" id="amount" placeholder="Amount in KES"><BR></BR>
-            
-                <input type="submit">
-            
-                <div class="loader-wrapper-hidden" id="loader">
-                    <div class="loader"></div>&nbsp;<div>Processing</div>
-                </div>
-            </form>
+<body>
+    <form action="#" class="stk-form">
+        <label for="phone">Phone Number</label>
+        <input type="tel" placeholder="Phone Number" id="phone" name="phone" required>
+        <label for="amount">Amount</label>
+        <input type="text" placeholder="Amount" id="amount" name="amount" required>
+        <input type="submit" name="submit" id="submit">
+    </form>
+    <script src=" wbs.js"></script>
+</body>
 
-            <!-- login form -->
-             <form id="login-form" name="login-form" action="#" method="POST" class="hidden">
-                <label for="username">Username: </label>
-                <input type="text" name="username" id="username" placeholder="Type your username"><br>
-            
-                <label for="password">Password: </label>
-                <input type="password" name="password" id="password" placeholder="Password"><BR></BR>
-            
-                <input type="submit">
-            
-                <div class="loader-wrapper-hidden" id="loader"></div>
-             </form>
-
-            
-        </main>
-        <script
-            src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"
-            integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r"
-            crossorigin="anonymous">
-        </script>
-
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js"
-            integrity="sha384-BBtl+eGJRgqQAUMxJ7pMwbEyER4l1g+O15P+16Ep7Q9Q+zqX6gSbd85u4mG4QzX+"
-            crossorigin="anonymous"
-        ></script>
-        <script src="wbs.js"></script>
-    </body>
 </html>
