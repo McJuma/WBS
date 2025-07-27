@@ -31,6 +31,9 @@ stkForm.addEventListener('submit', (e) => {
     amount = amount.toString();
     phone = phone.toString();
 
+    // reset form
+    stkForm.reset();
+
     // submit the form with the phone and amount values
     const formData = new FormData();
     formData.append('phone', phone);
@@ -39,11 +42,15 @@ stkForm.addEventListener('submit', (e) => {
     fetch('formhandler.php', {
         method: 'POST',
         body: formData
-    }).then(response => response.json())
-        .then(data => {
-            alert(data); // Show server response
+    }).then(Response => Response.json())
+        .then(serverResponse => {
+            if (serverResponse.success) {
+                alert(serverResponse.message);
+            } else {
+                alert(serverResponse.message);
+            }
         })
         .catch(error => {
-            alert('Error: ' + error);
+            console.error('Error:', error);
         });
 });

@@ -103,7 +103,7 @@ function sendStkPush($payload, $access_token) {
 }
 
 function storeTransaction($merchantRequestID, $checkoutRequestID, $phone, $amount, $accountReference) {
-    $conn = new mysqli('db_name', 'db_username', 'db_password', 'db_name');
+    $conn = new mysqli('db_host', 'db_username', 'db_password', 'db_name');
     if ($conn->connect_error) {
         logError("logs/db_error.log", $conn->connect_error);
         return false;
