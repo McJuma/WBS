@@ -19,7 +19,7 @@ $callbackUrl = 'https://YOUR_DOMAIN/mpesa-callback.php'; // Must be https
 // === 3. Get OAuth Access Token ===
 $access_token = getAccessToken($consumerKey, $consumerSecret);
 if (!$access_token) {
-    respond(['status' => 'error', 'message' => 'Failed to get access token.']);
+    respond(['status' => 'error', 'message' => 'An internal error occurred. Please try again.']);
 }
 
 // === 4. Prepare STK Push Payload ===
@@ -51,19 +51,19 @@ if (isset($response['ResponseCode']) && $response['ResponseCode'] === '0') {
     $checkoutRequestID = $response['CheckoutRequestID'];
     $dbResult = storeTransaction($merchantRequestID, $checkoutRequestID, $phone, $amount, $accountReference);
     if ($dbResult !== true) {
-        respond(['status' => 'error', 'message' => 'DB insert failed']);
+        respond(['DB insert failed']);
     }
     respond([
         'status' => 'pending',
-        'message' => 'STK Push sent successfully.',
+        'message' => 'Mpesa prompt sent. Check your phone for confirmation.',
         'checkoutRequestID' => $checkoutRequestID
     ]);
 } else {
     logError("logs/stkpush_errors.log", json_encode($response));
     respond([
         'status' => 'error',
-        'message' => 'STK Push request failed',
-        'response' => $response
+        'message' => 'An error occurred. Please try again.',
+        // 'response' => $response
     ]);
 }
 
