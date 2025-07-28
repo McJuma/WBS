@@ -1,5 +1,13 @@
 const stkForm = document.querySelector('.stk-form');
 
+function showLoader() {
+    document.querySelector('.loader-container').classList.remove('hidden');
+}
+
+function hideLoader() {
+    document.querySelector('.loader-container').classList.add('hidden');
+}
+
 stkForm.addEventListener('submit', (e) => {
     e.preventDefault();
 
@@ -31,26 +39,28 @@ stkForm.addEventListener('submit', (e) => {
     amount = amount.toString();
     phone = phone.toString();
 
-    // reset form
-    stkForm.reset();
-
     // submit the form with the phone and amount values
     const formData = new FormData();
     formData.append('phone', phone);
     formData.append('amount', amount);
 
+    showLoader();
     fetch('formhandler.php', {
         method: 'POST',
         body: formData
-    }).then(Response => Response.json())
+    })
+        .then(Response => Response.json())
         .then(serverResponse => {
+            hideLoader();
             if (serverResponse.success) {
+                stkForm.reset();
                 alert(serverResponse.message);
             } else {
                 alert(serverResponse.message);
             }
         })
         .catch(error => {
+            hideLoader();
             console.error('Error:', error);
         });
 });

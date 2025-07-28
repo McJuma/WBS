@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WBS</title>
-    <link rel="stylesheet" href="wbs.css">
+    <title>Mpesa STK Push</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
@@ -16,7 +16,13 @@
         <input type="text" placeholder="Amount" id="amount" required>
         <input type="submit" name="submit" id="submit">
     </form>
-    <script src=" wbs.js"></script>
+    <div class="loader-container overlay hidden">
+        <div class="loader">
+            <div class="ring"></div>
+            <span class="loading">Processing...</span>
+        </div>
+    </div>
+    <script src="scripts.js"></script>
 </body>
 
 </html>
